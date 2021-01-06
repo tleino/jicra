@@ -1,0 +1,65 @@
+<html>
+<head>
+<title>Jicra - Java IRC Chat Room Applet</title>
+</head>
+<body>
+<table border=1 width=703>
+<th bgcolor=#cccccc align=left>Note</th><tr>
+<td bgcolor=#aaaaaa>
+This page utilizes JavaScript to parse the form and send the parameters to
+the Java Applet. It is for those who can't, don't know how or just are too
+lazy to install <a href=http://www.php.net>PHP</a> on the server and use
+<a href=index-php.html>index-php.html</a> or write
+CGI-BIN script using a language such as Perl or Python. If you can't use
+either one of the supplied scripts, you can also use the
+<a href=index-plain.html>index-plain.html</a>, though it is useful only
+for testing purposes.<p> 
+
+This script asks only for nickname. You can (and should) customize it to
+suit your needs, beginning from removing this note and changing the channel
+name from #majik to your channel or make an input field for asking it. After
+you feel like your copy of Jicra is up and running on your website, you may
+want to submit it to the listing of Jicra's around the world on
+<a href="http://www.majik3d.org/~namhas/jicra/">Jicra's homepage</a>, if your
+chat room is public and you want to get few extra visitors.
+</td><tr>
+</table>
+<script language="JavaScript">
+function nextPage() {
+  self.location = 'index-js.html?nick=' + escape(document.theForm.nick.value);
+}
+
+str = "";
+str += document.location;
+
+if (str.indexOf("?") == -1)
+  {
+    document.write('<form name=\"theForm\" onSubmit = \"nextPage();return false;\">');
+    document.write('<h3>Jicra</h3>');
+    document.write('<table border=0>');
+    document.write('<td rowspan=3><img src=\"gfx/jicra.jpg\"></td>');
+    document.write('<td><b>Nick name:</b></td><td><input type=\"text\" name=\"nick\" size=20>');
+    document.write('</td><tr><td></td><tr>');
+    document.write('<td></td><td><input type=submit value=\"Login\"> <input type=reset value=\"Reset\">');
+    document.write('</td><tr>');
+    document.write('</table>');
+    document.write('</form>');
+  } else {
+    str = "";
+    str += self.location;
+    var i = str.indexOf('=');
+    nick = str.substring(i+1);
+    if (nick == "" || nick == null) {
+      nick = "anon";
+    }
+    document.write('<applet code=Jicra.class width=703 height=410>');
+    document.write('<param name=nick value=\"'+nick+'\">');
+    document.write('<param name=realname value=\"Anonymous Jicra User\">');
+    document.write('<param name=port value=\"6667\">');
+    document.write('<param name=channel value=\"#majik\">');
+    document.write('<param name=user value=\"'+nick+'\">');
+    document.write('Sorry, you don\'t seem to have Java 1.1 compatible browser.');
+    document.write('</applet>');
+    }
+</script>
+</body></html>

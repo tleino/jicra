@@ -1,0 +1,451 @@
+diff -urN jicra-1.2.2/Jicra.java jicra-1.2.2pl1/Jicra.java
+--- jicra-1.2.2/Jicra.java	Wed Dec 12 09:01:35 2001
++++ jicra-1.2.2pl1/Jicra.java	Tue Jan 29 15:34:17 2002
+@@ -28,8 +28,19 @@
+  */
+ 
+ public class Jicra extends Applet implements ActionListener, ItemListener {
+-    public static String version = "1.2.2";
+-    public static TextArea text = null;
++    public static String version = "1.2.2pl1";
++    public static boolean quiet;
++    public static String nextMessage;
++    public static String backColorString = "";
++    public static String foreColorString = "";
++    public static Integer backColorInteger;
++    public static Integer foreColorInteger;
++    public static Color backColor;
++    public static Color foreColor;
++    public static Integer fontSizeInteger;
++    public static int fontSize;
++    public static String fontName;
++    public static NoEditArea text = null;
+     public static TextField input = null;
+     public static List list = null;
+     public static Net net = null;
+@@ -42,27 +53,83 @@
+     public static String query_nick = null;
+     
+     public void init() {
+-	input = new TextField("", 80);
+-	list = new List();
+-	text = new TextArea("*** Jicra "+Jicra.version+
+-			    " (c) 2000 Tommi Leino <namhas@taikatech.com>\n",
+-			    20, 80, TextArea.SCROLLBARS_VERTICAL_ONLY);
+ 
++	// see how loud I should be
++	if(getParameter("quiet") != null) 
++		quiet = true;
++	else
++		quiet = false;
++	
++	// all this just to set the background color
++	backColor = Color.white;
++	backColorString = getParameter("background");	
++	if(backColorString != null) {
++		if(backColorString.length() == 6) {
++			backColorInteger = 
++				backColorInteger.valueOf(backColorString, 16);
++			backColor = new Color(
++				backColorInteger.intValue());
++		}
++	}
++	setBackground(backColor);
++
++	// all this just to set the foreground color
++	foreColor = Color.black;
++	foreColorString = getParameter("foreground");
++	if(foreColorString != null) {
++		if(foreColorString.length() == 6) {
++			foreColorInteger = 
++				foreColorInteger.valueOf(foreColorString, 16);	
++			foreColor = new Color(
++				foreColorInteger.intValue());
++		}
++	}
++	setForeground(foreColor);
++
++	// get the font size
++	if(getParameter("font_size") != null)  {
++		fontSizeInteger = 
++			fontSizeInteger.valueOf(getParameter("font_size"), 12);
++		fontSize = fontSizeInteger.intValue();
++	}
++	else fontSize = 12;
++	
++	// get the font face
++	fontName = getParameter("font_name");
++	if(fontName == null)  {
++		fontName = "fixed";
++	}
++
++	input = new TextField("", 0);
++	input.setBackground(backColor);
++	input.setForeground(foreColor);
++	list = new List();
++	//if(!quiet) nextMessage = "*** Jicra "+Jicra.version
++	//	+" (c) 2000 Tommi Leino <namhas@taikatech.com>\n";
++	//text = new NoEditArea(nextMessage,
++	//		    0, 0, TextArea.SCROLLBARS_VERTICAL_ONLY);
++	text = new NoEditArea();
++	text.setBackground(backColor);
++	text.setForeground(foreColor);
++	if(!quiet) text.append("*** Jicra "+Jicra.version
++		+" (c) 2000 Tommi Leino <namhas@taikatech.com>\n");
+ 	GridBagLayout gridBag = new GridBagLayout();
+ 	GridBagConstraints c = new GridBagConstraints();
+-	setFont(new Font("fixed", 0, 12));
++	setFont(new Font(fontName, 0, fontSize));
+ 	setLayout(gridBag);
+ 
+ 	c.fill = GridBagConstraints.BOTH;
+ 	c.weightx = 1.0;
+ 	c.weighty = 1.0;
+ 	c.gridwidth = GridBagConstraints.RELATIVE;
+-	text.setFont(new Font("fixed", 0, 12));
+-	text.setEditable(false);
++	text.setFont(new Font(fontName, 0, fontSize));
++	//text.setEditable(false);
+ 	gridBag.setConstraints(text, c);
+ 
++	list.setBackground(backColor);
++	list.setForeground(foreColor);
+ 	list.addItemListener(this);
+-	list.setFont(new Font("fixed", 0, 12));
++	list.setFont(new Font(fontName, 0, fontSize));
+ 	c.fill = GridBagConstraints.VERTICAL;
+ 	c.gridwidth = GridBagConstraints.REMAINDER;
+ 	c.weighty = 1.0;
+@@ -73,7 +140,7 @@
+ 	c.weightx = 1.0;
+ 	c.weighty = 0.0;
+ 	c.gridwidth = GridBagConstraints.REMAINDER;
+-	input.setFont(new Font("fixed", 0, 12));
++	input.setFont(new Font(fontName, 0, fontSize));
+ 	input.addActionListener(this);
+ 	gridBag.setConstraints(input, c);
+ 
+@@ -81,7 +148,7 @@
+ 	add(list);
+ 	add(input);
+ 
+-	setSize(703, 410);
++	//setSize(703, 410);
+ 
+ 	nick = getParameter("nick");
+ 	realname = getParameter("realname");
+@@ -104,7 +171,7 @@
+ 	    Jicra.user = getParameter("user");
+ 	
+ 	net = new Net();
+-	text.append("*** Connecting IRC server...\n");
++	if(!quiet) text.append("*** Connecting IRC server...\n");
+ 	net.connect(getCodeBase().getHost());
+ 	net.send("USER "+user+" * * :"+realname+"");
+ 	net.send("NICK "+nick+"");
+@@ -115,7 +182,7 @@
+ 	if (e.getSource() == input && !e.getActionCommand().equals("") &&
+ 	    e.getActionCommand() != null) {
+ 	    if (e.getActionCommand().charAt(0) == '/') {
+-		text.append("*** No IRC commands supported.\n");
++		if(!quiet) text.append("*** No IRC commands supported.\n");
+ 	    }
+ 	    else if (e.getActionCommand().charAt(0) == '*' &&
+ 		e.getActionCommand().charAt(e.getActionCommand().length()-1) == '*') {
+diff -urN jicra-1.2.2/Makefile jicra-1.2.2pl1/Makefile
+--- jicra-1.2.2/Makefile	Thu Sep 21 08:29:32 2000
++++ jicra-1.2.2pl1/Makefile	Mon Oct 22 11:58:26 2001
+@@ -25,8 +25,9 @@
+ # dependencies
+ 
+ Jicra.class: \
++	NoEditArea.class \
+ 	Protocol.class \
+-	Net.class
++	Net.class \
+ 
+ ForwardServer.class: \
+ 	ForwardServerNet.class \
+diff -urN jicra-1.2.2/Net.java jicra-1.2.2pl1/Net.java
+--- jicra-1.2.2/Net.java	Thu Sep 21 06:06:24 2000
++++ jicra-1.2.2pl1/Net.java	Mon Oct 22 11:58:28 2001
+@@ -57,7 +57,7 @@
+ 			
+ 		Protocol.parse(buf);
+ 	    } catch (IOException e) {
+-		Jicra.text.append("Error: " + e + "\n");
++		if(!Jicra.quiet) Jicra.text.append("Error: " + e + "\n");
+ 		return;
+ 	    }
+ 	}		
+@@ -71,10 +71,10 @@
+ 	try {
+ 	    socket = new Socket(host, Jicra.port);		   
+ 	} catch (UnknownHostException e) {
+-	    Jicra.text.append("Error: " + e + "\n");
++	    if(!Jicra.quiet) Jicra.text.append("Error: " + e + "\n");
+ 	    return;
+ 	} catch (IOException e) {
+-	    Jicra.text.append("Error: " + e + "\n");
++	    if(!Jicra.quiet) Jicra.text.append("Error: " + e + "\n");
+ 	    return;
+ 	}
+ 	  
+@@ -84,7 +84,7 @@
+ 	    is = new BufferedReader(new
+ 		InputStreamReader(socket.getInputStream()));
+ 	} catch (IOException e) {
+-	    Jicra.text.append("Error: " + e + "\n");
++	    if(!Jicra.quiet) Jicra.text.append("Error: " + e + "\n");
+ 	    return;
+ 	}
+ 	  
+@@ -103,7 +103,7 @@
+ 	    try {
+ 		wait();
+ 	    } catch (InterruptedException e) {
+-		Jicra.text.append("Error: " + e + "\n");
++		if(!Jicra.quiet) Jicra.text.append("Error: " + e + "\n");
+ 		return;
+ 	    }
+ 	}
+@@ -115,10 +115,10 @@
+ 	    os.write(data + "\r\n");
+ 	    os.flush();
+ 	} catch (IOException e) {
+-	    Jicra.text.append("Error: " + e + "\n");
++	    if(!Jicra.quiet) Jicra.text.append("Error: " + e + "\n");
+ 	    return;
+ 	} catch (NullPointerException e) {
+-	    Jicra.text.append("Error: " + e + "\n");
++	    if(!Jicra.quiet) Jicra.text.append("Error: " + e + "\n");
+ 	}
+     }
+    
+@@ -134,7 +134,7 @@
+ 	try {
+ 	socket.close();
+ 	} catch (IOException e) {
+-	    Jicra.text.append("Error: " + e + "\n");
++	    if(!Jicra.quiet) Jicra.text.append("Error: " + e + "\n");
+ 	}
+ 	Jicra.list.removeAll();
+     }
+diff -urN jicra-1.2.2/NoEditArea.java jicra-1.2.2pl1/NoEditArea.java
+--- jicra-1.2.2/NoEditArea.java	Wed Dec 31 18:00:00 1969
++++ jicra-1.2.2pl1/NoEditArea.java	Mon Oct 22 11:58:23 2001
+@@ -0,0 +1,28 @@
++import java.awt.*;
++
++
++public class NoEditArea extends TextArea {
++
++    Color bg;
++    public NoEditArea() {
++        super("", 0, 0, SCROLLBARS_VERTICAL_ONLY);
++        setEditable(false);
++        bg = new Color(102, 153, 153);
++    }
++
++    public void setBackground(Color col) {
++        bg = col;
++        super.setBackground(col);
++    }
++
++    public Color getBackground() {
++        return bg;
++    }
++
++    public static void main() {
++        Frame f = new Frame();
++        f.add(new NoEditArea());
++        f.pack();
++        f.setVisible(true);
++    }
++}
+diff -urN jicra-1.2.2/Protocol.java jicra-1.2.2pl1/Protocol.java
+--- jicra-1.2.2/Protocol.java	Wed Dec 12 08:53:23 2001
++++ jicra-1.2.2pl1/Protocol.java	Tue Jan 29 15:36:12 2002
+@@ -56,8 +56,8 @@
+ 	    Jicra.nick = params.substring(0, params.indexOf(" "));
+ 	    Jicra.net.send ("JOIN "+Jicra.channel+"");
+ 	    nick_count = 0;
+-	    Jicra.text.append("*** Connected to IRC server "+from+" - Welcome!\n");
+-	    Jicra.text.append("*** Joining channel "+Jicra.channel+"...\n");
++	    if(!Jicra.quiet) Jicra.text.append("*** Connected to IRC server "+from+" - Welcome!\n");
++	    if(!Jicra.quiet) Jicra.text.append("*** Joining channel "+Jicra.channel+"...\n");
+ 	}
+ 	if (command.equals("251")) {
+ 	}
+@@ -71,7 +71,7 @@
+ 	    }
+ 	    to = params.substring(0, params.indexOf(":")-1);
+             what = params.substring(params.indexOf(":")+1, params.length());
+-	    Jicra.text.append("-"+from+"- " + what + "\n");
++	    if(!Jicra.quiet) Jicra.text.append("-"+from+"- " + what + "\n");
+ 	}   
+ 	if (command.equals("PRIVMSG")) {
+ 	    String from = "", to = "", what = "";
+@@ -95,7 +95,7 @@
+ 		Jicra.channel = params.substring(params.indexOf(":")+1,
+ 						 params.length());
+ 	    } else {
+-		Jicra.text.append("*** " + from + " joined the channel.\n");
++		if(!Jicra.quiet) Jicra.text.append("*** " + from + " joined the channel.\n");
+ 		Jicra.list.add(from);
+ 	    }
+ 	}
+@@ -106,7 +106,7 @@
+ 		Jicra.channel = "";
+ 		Jicra.list.removeAll();
+ 	    } else {
+-		Jicra.text.append("*** " + from + " left the channel.\n");
++		if(!Jicra.quiet) Jicra.text.append("*** " + from + " left the channel.\n");
+ 		Jicra.list.remove(from);
+ 		if (Jicra.query_nick != null &&
+ 		    Jicra.query_nick.equals(from)) {
+@@ -118,7 +118,7 @@
+ 	if (command.equals("QUIT")) {
+ 	    String from = "";
+ 	    from =  prefix.substring(0, prefix.indexOf("!"));
+-	    Jicra.text.append("*** " + from + " left the IRC network.\n");
++	    if(!Jicra.quiet) Jicra.text.append("*** " + from + " left the IRC network.\n");
+ 	    Jicra.list.remove(from);
+ 	    if (Jicra.query_nick != null && Jicra.query_nick.equals(from)) {
+ 		Jicra.text.append("*** No longer speaking in private.\n");
+@@ -128,15 +128,15 @@
+ 	if (command.equals("332") || command.equals("TOPIC")) {
+ 	    Jicra.topic = params.substring(params.indexOf(":")+1,
+ 					   params.length());
+-	    Jicra.text.append("*** Topic for channel "+Jicra.channel+": "+
++	    if(!Jicra.quiet) Jicra.text.append("*** Topic for channel "+Jicra.channel+": "+
+ 			      Jicra.topic+ "\n");
+ 	}
+         if (command.equals("331")) {
+ 	    Jicra.topic = "";
+-            Jicra.text.append("*** No topic is set for channel "+Jicra.channel+"\n");
++            if(!Jicra.quiet) Jicra.text.append("*** No topic is set for channel "+Jicra.channel+"\n");
+         }
+ 	if (command.equals("366")) {
+-	    Jicra.text.append("*** Channel "+Jicra.channel+" joined.\n");
++	    if(!Jicra.quiet) Jicra.text.append("*** Channel "+Jicra.channel+" joined.\n");
+ 	}
+ 	if (command.equals("353")) {
+ 	    int last_j = params.indexOf(":")+1, new_j = 0;
+@@ -152,12 +152,12 @@
+ 	    }
+ 	}
+ 	if (command.equals("465")) {
+-	    Jicra.text.append ("*** "+params.substring(1, params.length())+".\n");
++	    if(!Jicra.quiet) Jicra.text.append ("*** "+params.substring(1, params.length())+".\n");
+ 	    Jicra.net.disconnect();
+ 	}
+ 	if (command.equals("433")) {
+ 	    nick_count++;
+-	    Jicra.text.append ("*** Nickname "+Jicra.nick+
++	    if(!Jicra.quiet) Jicra.text.append ("*** Nickname "+Jicra.nick+
+ 			       " is already in use, trying "+Jicra.nick+
+ 			       ""+nick_count+" instead!\n");   
+ 	    if (Jicra.nick.length() > 8 && nick_count == 1) {
+@@ -166,7 +166,7 @@
+ 	    Jicra.net.send ("NICK "+Jicra.nick+""+nick_count+"");
+ 	}
+         if (command.equals("432")) {
+-	    Jicra.text.append("*** Nickname "+Jicra.nick+" is erroneous, trying to use guest nickname.\n");
++	    if(!Jicra.quiet) Jicra.text.append("*** Nickname "+Jicra.nick+" is erroneous, trying to use guest nickname.\n");
+ 	    Jicra.nick = "guest";
+ 	    Jicra.net.send("NICK "+Jicra.nick+"");
+ 	}
+diff -urN jicra-1.2.2/index-php-advanced.php jicra-1.2.2pl1/index-php-advanced.php
+--- jicra-1.2.2/index-php-advanced.php	Wed Dec 31 18:00:00 1969
++++ jicra-1.2.2pl1/index-php-advanced.php	Mon Oct 22 11:58:29 2001
+@@ -0,0 +1,89 @@
++<html>
++<head>
++<title>Jicra - Java IRC Chat Room Applet</title>
++</head>
++<body>
++<?
++if (empty($nick))
++  {
++    ?>
++<form method="post" action="<?echo $PHP_SELF;?>">
++<h3>Jicra</h3>
++<table border=0>
++<td rowspan=3><img src="gfx/jicra.jpg"></td>
++<td><b>Nick name:</b></td><td><input type="text" name="nick" size=20>
++</td><tr>
++<td><b>Real name:</b></td><td><input type="text" name="realname" size=20>
++</td><tr>
++<td colspan=2>
++<table border=1 cellspacing=0>
++<tr>
++<td colspan=2><b>Optional Parameters</b></td>
++</tr>
++<tr>
++<td>Width:</td>
++<td><input type=text size=4 maxlength=6 name="width" 
++	value="<?echo $width;?>"></td>
++</tr>
++<tr>
++<td>Height:</td>
++<td><input type=text size=4 maxlength=6 name="height" 
++	value="<?echo $height;?>"></td>
++</tr>
++<tr>
++<td>Forground Color:</td>
++<td>#<input type=text size=6 maxlength=6 name="foreground" 
++	value="<?echo $foreground;?>"></td>
++</tr>
++<tr>
++<td>Background Color:</td>
++<td>#<input type=text size=6 maxlength=6 name="background" 
++	value="<?echo $background;?>"></td>
++</tr>
++<tr>
++<td>Font Size:</td>
++<td><input type=text size=2 maxlength=2 name="font_size" 
++	value="<?echo $font_size;?>">pts</td>
++</tr>
++<tr>
++<td>Font Name:</td>
++<td><input type=text name="font_name" 
++	value="<?echo $font_name;?>"></td>
++</tr>
++<tr>
++<td>Quiet:</td>
++<td><input name=quiet type=checkbox value=true></td>
++</tr>
++</table>
++</td>
++<tr>
++<td></td><td><input type=submit value="Login"> <input type=reset value="Reset">
++</td><tr>
++</table>
++</form>
++<?
++  } else {
++    ?>
++<body>
++<applet code=Jicra.class width="<?echo ($width) ? $width : 430;?>" 
++			height="<?echo ($height) ? $height : 410;?>">
++<?
++echo "<param name=nick value=\"".$nick."\">\n";
++echo "<param name=realname value=\"".$realname."\">\n";
++echo "<param name=port value=\"6667\">\n";
++echo "<param name=user value=\"".$nick."\">\n";
++if($background) echo "<param name=background value=\"".$background."\">\n";
++if($foreground) echo "<param name=foreground value=\"".$foreground."\">\n";
++if($font_size) echo "<param name=font_size value=\"".$font_size."\">\n";
++if($font_name) echo "<param name=font_name value=\"".$font_name."\">\n";
++if($quiet) echo "<param name=quiet value=\"".$quiet."\">\n";
++?>
++<param name=channel value="#test">
++Sorry, you don't seem to have Java 1.1 compatible browser.
++</applet>
++</body>
++<?
++  }
++    ?>
++</body>
++</html>

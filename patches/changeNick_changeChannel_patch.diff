@@ -1,0 +1,86 @@
+*** Protocol.java	Thu Oct  5 18:50:13 2000
+--- ../jicra-1.2.0ks/Protocol.java	Thu Oct  5 18:41:36 2000
+***************
+*** 58,62 ****
+  	    nick_count = 0;
+  	    Jicra.text.append("*** Connected to IRC server "+from+" - Welcome!\n");
+- 	    Jicra.text.append("*** Joining channel "+Jicra.channel+"...\n");
+  	}
+  	if (command.equals("251")) {
+--- 58,61 ----
+***************
+*** 93,98 ****
+  	    from = prefix.substring(0, prefix.indexOf("!"));
+  	    if (from.equals(Jicra.nick)) {
+! 		Jicra.channel = params.substring(params.indexOf(":")+1,
+! 						 params.length());
+  	    } else {
+  		Jicra.text.append("*** " + from + " joined the channel.\n");
+--- 92,97 ----
+  	    from = prefix.substring(0, prefix.indexOf("!"));
+  	    if (from.equals(Jicra.nick)) {
+! 		Jicra.channel = params.substring(params.indexOf(":")+1, params.length());
+!                 Jicra.text.append("*** Joining channel "+Jicra.channel+"...\n");
+  	    } else {
+  		Jicra.text.append("*** " + from + " joined the channel.\n");
+***************
+*** 104,107 ****
+--- 103,107 ----
+  	    from =  prefix.substring(0, prefix.indexOf("!"));
+  	    if (from.equals(Jicra.nick)) {
++ 		Jicra.text.append("*** Left channel "+Jicra.channel+"\n");
+  		Jicra.channel = "";
+  		Jicra.list.removeAll();
+***************
+*** 186,189 ****
+--- 186,194 ----
+  
+  	    Jicra.text.append("*** "+from+" is now known as "+to+".\n");
++ 
++ 	    if (from.equals(Jicra.nick)){
++ 		Jicra.nick = to;
++ 	    }
++ 
+  	    for (i=0;i<Jicra.list.getItemCount();i++) {
+  		if (Jicra.list.getItem(i).equals(from)) {
+
+*** Jicra.java	Wed Sep 27 08:13:46 2000
+--- ../jicra-1.2.0ks/Jicra.java	Thu Oct  5 18:38:46 2000
+***************
+*** 111,115 ****
+  	Jicra.channel = getParameter("channel");
+      }
+!     
+      public void actionPerformed(ActionEvent e) {
+  	if (e.getSource() == input && !e.getActionCommand().equals("") &&
+--- 111,140 ----
+  	Jicra.channel = getParameter("channel");
+      }
+! 
+!     public void changeNICK(String NewNickname){
+! 	if (NewNickname.length() > 9) {
+! 	   NewNickname = NewNickname.substring(0, 8);
+! 	}
+! 	
+! 	NewNickname = NewNickname.replace(' ', '_');
+! 	
+! 	if (!NewNickname.equals(nick)){
+! 	   net.send("NICK "+NewNickname+"");
+! 	}
+!     }    
+! 
+!     public void changeCHANNEL(String NewChannel){
+! 	NewChannel = NewChannel.replace(' ', '_');
+! 	if (!NewChannel.equals(Jicra.channel)){
+! 		net.send("PART "+Jicra.channel+"");
+! 		net.send("JOIN "+NewChannel+"");
+! 	}
+!     }
+! 
+!     public void sendCommand(String Command){
+! 	net.send(Command);
+!     }
+! 
+! 
+      public void actionPerformed(ActionEvent e) {
+  	if (e.getSource() == input && !e.getActionCommand().equals("") &&

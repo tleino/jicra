@@ -1,0 +1,60 @@
+<html>
+<head>
+<title>Jicra - Java IRC Chat Room Applet</title>
+</head>
+<body>
+<table border=1 width=703>
+<th bgcolor=#cccccc align=left>Note</th><tr>
+<td bgcolor=#aaaaaa>
+This page utilizes PHP to parse the form and send the parameters to the Java
+Applet. It is recommended script to use, if you happen to have
+<a href=http://www.php.net>PHP</a> installed on your server, otherwise it
+will not work and you should use <a href=index-js.html>index-js.html</a>
+instead, which uses JavaScript, if you don't want to write your own CGI-BIN
+script using a language such as Perl or Python. If you can't use either
+one of the supplied scripts, you can also use the
+<a href=index-plain.html>index-plain.html</a>, though it is useful only
+for testing purposes.<p>
+You can (and should) customize
+this to suit your needs, beginning from removing this note and changing the
+channel name from #majik to your channel or make an input field for asking
+it. After you feel like your copy of Jicra is up and running on your
+website, you may want to submit it to the listing of Jicra's around the world
+on <a href="http://www.majik3d.org/~namhas/jicra/">Jicra's homepage</a>,
+if your chat room is public and you want to get few extra visitors.
+</td><tr>
+</table>
+<?
+if (empty($nick))
+  {
+    ?>
+<form method="post" action="index-php.html">
+<h3>Jicra</h3>
+<table border=0>
+<td rowspan=3><img src="gfx/jicra.jpg"></td>
+<td><b>Nick name:</b></td><td><input type="text" name="nick" size=20>
+</td><tr>
+<td><b>Real name:</b></td><td><input type="text" name="realname" size=20>
+</td><tr>
+<td></td><td><input type=submit value="Login"> <input type=reset value="Reset">
+</td><tr>
+</table>
+</form>
+<?
+  } else {
+    ?>
+<applet code=Jicra.class width=703 height=410>
+<?
+echo "<param name=nick value=\"".$nick."\">\n";
+echo "<param name=realname value=\"".$realname."\">\n";
+echo "<param name=port value=\"6667\">\n";
+echo "<param name=user value=\"".$nick."\">\n";
+?>
+<param name=channel value="#majik">
+Sorry, you don't seem to have Java 1.1 compatible browser.
+</applet>
+<?
+  }
+    ?>
+</body>
+</html>

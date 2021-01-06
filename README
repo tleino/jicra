@@ -1,0 +1,79 @@
+What is Jicra?
+--------------
+
+The name Jicra comes from words "Java IRC Chat Room Applet" and it was made
+for the Majik Project (http://www.majik3d.org/) as the project wanted to
+lessen the curve needed for the new users to participate our discussions in
+the IRC. Without such an applet they would have needed to download an IRC
+client, find a right server and join the channel. A lot of work to do if
+just wanting to say hello.
+
+Jicra is a very simple IRC client Java applet that includes only minimal
+functionatily and doesn't try to look like an IRC client in any way. It just
+tries to be a chat room limited to one channel without any fancy commands.
+This way the applet is very light-weight and doesn't require the user to
+learn anything.
+
+See http://www.majik3d.org/~namhas/jicra/ for the homepage.
+
+Installation
+------------
+
+To install just type "make clean && make" or alternatively "javac *.java" or
+use pre-compiled class files and then customise one of the .html-files to suit
+your needs. There is a version for PHP and for JavaScript, along with the
+index-plain.html, which doesn't use scripting and thus is suitable only
+for testing or for a chat room that allows only anonymous connections.
+
+One caveat with this applet is that the Java does allow connecting only local
+services so that's why there is no variable to et the IRC server's address.
+You need to be a root at your server and set the local port 6667 (or whatever
+you want) to be forwarded to the IRC server you want to use, if you're not
+going to set up a local IRC server. You can also use program like aproxy,
+tircproxy or similar to forward the connection or then use the ForwardServer
+Java Port Forwarder that comes along with this package. It handles the
+forwarding and it may be possible to use without root privileges. On Linux
+system you would set up the port forwarding using ForwardServer like this,
+assuming that you have JDK installed and you have compiled the .java files
+or you use the supplied pre-compiled binaries.
+
+  $ java ForwardServer irc.stealth.net 6667 6667
+
+That would forward local port 6667 to irc.stealth.net's port 6667.
+
+Yes, there is a way in Java to avoid this problem but it would fire up a
+dialog for the user asking whether the user wants to grant the applet a
+"high security risk" feature that would allow the applet to connect the
+outside world, and to make that happen, it would require me to have a
+Developer Certificate which costs just too much money. I will not buy
+one for a freely available program. If you for some reason can't set up
+local IRC server or use port forwarding, then I suggest you to visit
+http://www.jpilot.com for a shareware Java chat room.
+
+Release history
+---------------
+
+1.0.0 - The first public release.
+1.0.1 - Added support for ACTION, works by placing '*' to the beginning and
+        the end of a message.
+      - Disabled sending messages starting with a '/' to prevent people
+        confusing Jicra with a real IRC client.
+      - Added support for 465 error reply, ERR_YOUREBANNEDCREEP.
+1.1.0 - The automatic scrolling in the text window should work now.
+      - Added Java Port Forwarder, ForwardServer.
+      - Added port parameter.
+      - Various bugs has been fixed.
+      - Added JavaScript version of login-script for those without PHP.
+1.2.0 - Nick change bug fixed by Kalani Sanders.
+      - Better checking for nickname restrictions.
+      - Jicra now knows how to display NOTICE's.
+      - Support for server's ERROR command.
+      - Added user parameter.
+1.2.1 - If a NOTICE message was sent by a server, Jicra crashed. Applied
+        a patch from Kalani Sanders which fixed this.
+1.2.2 - Jicra crashed on KICK. No longer.
+
+Contact information
+-------------------
+
+Tommi Leino <namhas@taikatech.com>
